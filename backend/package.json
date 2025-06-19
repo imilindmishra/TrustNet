@@ -1,0 +1,15 @@
+{
+  "name": "trustnet-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@ceramicnetwork/http-client": "^2.0.0",
+    "dotenv": "^16.5.0",
+    "ethers": "5.7.2",
+    "express": "^4.17.1",
+    "ipfs-http-client": "^60.0.0",
+    "mongoose": "^6.0.0"
+  }
+}

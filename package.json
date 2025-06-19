@@ -1,0 +1,10 @@
+{
+    "name": "trustnet",
+    "version": "1.0.0",
+    "scripts": {
+      "frontend": "cd frontend && npm run dev",
+      "backend": "cd backend && node index.js",
+      "scripts": "cd scripts && source venv/bin/activate && python"
+    },
+    "license": "MIT"
+  }
