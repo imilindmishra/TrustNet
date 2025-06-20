@@ -1,8 +1,10 @@
-// File: backend/scripts/uploadIPFS.js - Naya code Pinata ke liye
+// File: trustnet/backend/scripts/uploadIPFS.js
 
 import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import "dotenv/config";
 
 const PINATA_JWT = process.env.PINATA_JWT;
@@ -11,15 +13,12 @@ const PINATA_URL = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 const uploadFileToPinata = async (filePath, fileName) => {
   const formData = new FormData();
   formData.append("file", fs.createReadStream(filePath));
-
   const metadata = JSON.stringify({ name: fileName });
   formData.append("pinataMetadata", metadata);
-
-  const options = JSON.stringify({ cidVersion: 0 });
+  const options = JSON.stringify({ cidVersion: 1 });
   formData.append("pinataOptions", options);
 
   try {
-    console.log(`Uploading ${fileName} to Pinata...`);
     const res = await axios.post(PINATA_URL, formData, {
       maxBodyLength: "Infinity",
       headers: {
@@ -27,7 +26,6 @@ const uploadFileToPinata = async (filePath, fileName) => {
         Authorization: `Bearer ${PINATA_JWT}`,
       },
     });
-    // The response contains the IpfsHash, which is our CID
     return res.data.IpfsHash;
   } catch (error) {
     console.error(
@@ -39,24 +37,26 @@ const uploadFileToPinata = async (filePath, fileName) => {
 };
 
 const runUploads = async () => {
-  const filesToUpload = ["contributor1.json", "contributor2.json"];
-  const cids = [];
+  const fileName = "all_collaborations.json";
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const filePath = path.join(__dirname, "..", "data", fileName);
 
-  for (const fileName of filesToUpload) {
-    const filePath = `./data/${fileName}`;
-    const cid = await uploadFileToPinata(filePath, fileName);
-    if (cid) {
-      console.log(`Successfully uploaded ${fileName}. CID: ${cid}`);
-      cids.push(cid);
-    }
+  if (!fs.existsSync(filePath)) {
+    console.error(
+      `\nERROR: File not found at ${filePath}. Please create it first.`
+    );
+    return;
   }
 
-  if (cids.length > 0) {
-    console.log("\nAll CIDs from Pinata:", cids);
+  console.log(`Uploading ${fileName} to Pinata...`);
+  const cid = await uploadFileToPinata(filePath, fileName);
+
+  if (cid) {
+    console.log("\n--- Real IPFS CID ---");
+    console.log(`Successfully uploaded! Your CID is: ${cid}`);
+    console.log("Copy this CID for the next step.");
   } else {
-    console.log(
-      "\nCould not upload files to Pinata. Please check errors above."
-    );
+    console.log("\nUpload failed. Please check for errors above.");
   }
 };
 
