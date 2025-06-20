@@ -1,0 +1,5 @@
+[
+    { "from": "0x123", "to": "0x456", "type": "endorsement", "content": "Great founder", "timestamp": "2025-06-20" },
+    { "from": "0x456", "to": "0x789", "type": "endorsement", "content": "Trusted dev", "timestamp": "2025-06-20" },
+    { "from": "0x789", "to": "0x123", "type": "endorsement", "content": "Reliable", "timestamp": "2025-06-20" }
+  ]
