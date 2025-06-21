@@ -1,6 +1,40 @@
 // File: trustnet/backend/utils/contractInfo.js
 
-export const verifierContractAddress =
-  "0xB3B0568CC49d2F688450D4BE02854d5B5f5212F1";
+export const verifierContractAddress = "0x6262601Fec6300Fb36ccd145DB2cc8E741F8f31D";
 
-export const verifierContractAbi = [ { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "endorser", "type": "address" }, { "indexed": true, "internalType": "address", "name": "endorsed", "type": "address" } ], "name": "EndorsementVerified", "type": "event" }, { "inputs": [ { "internalType": "address", "name": "endorser", "type": "address" }, { "internalType": "address", "name": "endorsed", "type": "address" }, { "internalType": "bytes", "name": "dummyProof", "type": "bytes" } ], "name": "verifyEndorsement", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "pure", "type": "function" } ]; // Copy-paste the ABI array here
+export const verifierContractAbi = [
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[2]",
+        "name": "_pA",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[2][2]",
+        "name": "_pB",
+        "type": "uint256[2][2]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "_pC",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[1]",
+        "name": "_pubSignals",
+        "type": "uint256[1]"
+      }
+    ],
+    "name": "verifyProof",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+] 

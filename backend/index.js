@@ -1,10 +1,14 @@
-// File: index.js
+// File: index.js (Complete, Final, Corrected Version)
 
 import express from "express";
 import cors from "cors";
 import { ethers } from "ethers";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
+import * as snarkjs from "snarkjs";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 
 import connectDB from "./db.js";
 import TrustScore from "./models/TrustScore.js";
@@ -16,6 +20,7 @@ import "dotenv/config";
 
 const app = express();
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
@@ -29,9 +34,9 @@ const swaggerOptions = {
       description:
         "API for the TrustNet system to fetch trust scores and verify endorsements.",
     },
-    servers: [{ url: "http://localhost:3000" }],
+    servers: [{ url: "https://trustnet-backend.vercel.app" }],
   },
-  apis: ["./index.js"],
+  apis: ["./index.js"], // Ensure this points to the correct file
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -47,13 +52,15 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *       200:
  *         description: Confirmation message that the server is active
  *         content:
- *           text/plain:
+ *           application/json:
  *             schema:
  *               type: string
  *               example: TrustNet Backend is Running! API docs are available at /api-docs
  */
 app.get("/", (req, res) =>
-  res.send("TrustNet Backend is Running! API docs are available at /api-docs")
+  res.send(
+    "TrustNet Backend is Running! API docs at http://localhost:3000/api-docs"
+  )
 );
 
 /**
@@ -112,7 +119,7 @@ app.get("/trust-score/:address", async (req, res) => {
  * @swagger
  * /verify-endorsement:
  *   post:
- *     summary: Simulate the verification of a private endorsement
+ *     summary: Generate a ZK proof and verify it on-chain
  *     tags: [Verification]
  *     requestBody:
  *       required: true
@@ -121,22 +128,20 @@ app.get("/trust-score/:address", async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - endorser
- *               - endorsed
- *               - dummyProof
+ *               - a
+ *               - b
  *             properties:
- *               endorser:
+ *               a:
  *                 type: string
- *                 example: '0x1234567890123456789012345678901234567890'
- *               endorsed:
+ *                 description: First private input for the sum circuit
+ *                 example: '3'
+ *               b:
  *                 type: string
- *                 example: '0x0987654321098765432109876543210987654321'
- *               dummyProof:
- *                 type: string
- *                 example: '0xabc123'
+ *                 description: Second private input for the sum circuit
+ *                 example: '2'
  *     responses:
  *       200:
- *         description: Confirmation that the simulated verification was successful
+ *         description: On-chain verification result
  *         content:
  *           application/json:
  *             schema:
@@ -146,8 +151,19 @@ app.get("/trust-score/:address", async (req, res) => {
  *                   type: string
  *                 isVerified:
  *                   type: boolean
+ *                 publicOutput:
+ *                   type: string
  *       400:
- *         description: Missing required fields
+ *         description: Missing required inputs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -158,10 +174,31 @@ app.get("/trust-score/:address", async (req, res) => {
  */
 app.post("/verify-endorsement", async (req, res) => {
   try {
-    const { endorser, endorsed, dummyProof } = req.body;
-    if (!endorser || !endorsed || !dummyProof) {
-      return res.status(400).json({ error: "Missing required fields" });
+    const { a, b } = req.body;
+
+    if (a === undefined || b === undefined) {
+      return res
+        .status(400)
+        .json({ error: "Missing required inputs 'a' and 'b'" });
     }
+
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const wasmPath = path.join(__dirname, "zk_artifacts", "main.wasm");
+    const zkeyPath = path.join(__dirname, "zk_artifacts", "sum_0001.zkey");
+
+    console.log("Generating ZK proof for inputs...");
+
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+      { a: a, b: b },
+      wasmPath,
+      zkeyPath
+    );
+
+    console.log("Proof generated successfully.");
+    console.log("Public Output (c):", publicSignals[0]);
+
+    console.log("Verifying proof on-chain via Optimism Sepolia...");
+
     const provider = new ethers.providers.JsonRpcProvider(
       process.env.OPTIMISM_SEPOLIA_RPC_URL
     );
@@ -170,18 +207,26 @@ app.post("/verify-endorsement", async (req, res) => {
       verifierContractAbi,
       provider
     );
-    const isVerified = await verifierContract.verifyEndorsement(
-      endorser,
-      endorsed,
-      dummyProof
-    );
-    res.json({ message: "Verification simulated successfully", isVerified });
+
+    const isVerified = await verifierContract.verifyProof(proof, publicSignals);
+
+    res.json({
+      message: isVerified
+        ? "On-chain verification successful!"
+        : "On-chain verification failed.",
+      isVerified: isVerified,
+      publicOutput: publicSignals[0],
+    });
   } catch (error) {
     console.error("API Error in /verify-endorsement:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-connectDB();
-
-export default app;
+connectDB().then(() => {
+  app.listen(3000, () =>
+    console.log(
+      "Backend running on port 3000. API docs at http://localhost:3000/api-docs"
+    )
+  );
+});
