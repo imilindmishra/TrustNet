@@ -223,10 +223,5 @@ app.post("/verify-endorsement", async (req, res) => {
   }
 });
 
-connectDB().then(() => {
-  app.listen(3000, () =>
-    console.log(
-      "Backend running on port 3000. API docs at http://localhost:3000/api-docs"
-    )
-  );
-});
+connectDB();
+export default app;
