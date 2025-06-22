@@ -1,20 +1,34 @@
+// File: tool.tsx (Final Corrected Version)
+
 "use client"
-
 import type React from "react"
-
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Loader2 } from "lucide-react"
-import ResultCard from "@/components/result-card"
+import AnalysisCard from "@/components/AnalysisCard" // Import the new AnalysisCard
 
-interface TrustScoreResult {
+// Define the full analysis object structure from your API
+interface AnalysisResult {
   address: string
-  score: number
+  finalScore: number
+  scoreBreakdown: {
+    pageRankScore: number
+    sentimentBoost: number
+  }
+  networkAnalysis: {
+    collaborations: number
+    endorsementsReceived: number
+  }
+  endorsementQuality: {
+    sentimentLabel: string
+    positiveCount: number
+    negativeCount: number
+  }
 }
 
 export default function Tool() {
   const [address, setAddress] = useState("")
-  const [result, setResult] = useState<TrustScoreResult | null>(null)
+  const [result, setResult] = useState<AnalysisResult | null>(null) // Use the new interface
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -29,31 +43,28 @@ export default function Tool() {
     setResult(null)
 
     try {
+      // This is the correct fetch call that uses the environment variable
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trust-score/${address.trim()}`);
+      
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to fetch trust score")
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch trust score");
       }
-      const data = await response.json()
-      setResult(data)
+
+      const data = await response.json();
+      setResult(data);
     } catch (err: any) {
-      // Corrected logic: Only set the error and clear any results.
-      setError(err.message)
-      setResult(null)
+      setError(err.message);
+      setResult(null); 
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
-
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault()
-      checkTrustScore()
-    }
-  
-
-
-  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    checkTrustScore();
+  }
 
   return (
     <section id="tool" className="py-32 bg-black">
@@ -90,7 +101,6 @@ export default function Tool() {
                   disabled={isLoading}
                 />
               </div>
-
               <button
                 type="submit"
                 disabled={isLoading || !address.trim()}
@@ -117,7 +127,8 @@ export default function Tool() {
               </motion.div>
             )}
 
-            {result && <ResultCard result={result} />}
+            {/* This will now render our new, detailed analysis card */}
+            {result && <AnalysisCard result={result} />}
           </div>
         </motion.div>
       </div>
