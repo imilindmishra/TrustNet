@@ -56,51 +56,50 @@ The TrustNet system is a full-stack application designed with a modular architec
 ```mermaid
 graph TD
     subgraph "User Interface"
-        A[User] -->|1. Enters Address| B(Next.js Frontend on Vercel);
-        B -->|6. Displays Score| A;
+        A["User"] --> |"1. Enters Address"| B("Next.js Frontend on Vercel");
+        B --> |"6. Displays Score"| A;
     end
 
     subgraph "Backend System"
-        C(Node.js API on Render)
+        C("Node.js API on Render")
     end
 
     subgraph "Data & Blockchain Layer"
-        D[(MongoDB Atlas Database)]
-        E[Python Scoring Engine]
-        F(Smart Contracts on Optimism)
+        D[("MongoDB Atlas Database")]
+        E["Python Scoring Engine"]
+        F(("Smart Contracts on Optimism"))
     end
 
-    B -->|2. GET /trust-score/:address| C;
-    C -->|3. Reads Score| D;
-    D -->|4. Returns Score| C;
-    C -->|5. Returns JSON| B;
+    B --> |"2. GET /trust-score/{address}"| C;
+    C --> |"3. Reads Score"| D;
+    D --> |"4. Returns Score"| C;
+    C --> |"5. Returns JSON"| B;
 
-    E -- calculates & saves scores to --> D;
-    C -- can also verify ZK proofs with --> F;
+    E -- "calculates & saves scores to" --> D;
+    C -- "verifies ZK proofs with" --> F;
 ```
 
 #### Data & Scoring Pipeline Flow
-1.  **Data Seeding:** A Node.js script reads from multiple data sources (real IPFS, mock Lens/Ceramic) and populates the `interactions` collection in MongoDB Atlas.
-2.  **Graph Construction:** A Python script reads these raw interactions and uses `networkx` to build a weighted, directed graph.
+1.  **Data Seeding:** A Node.js script reads data sources and populates the `interactions` collection in MongoDB Atlas.
+2.  **Graph Construction:** A Python script reads these interactions and uses `networkx` to build a weighted, directed graph.
 3.  **Hybrid Scoring:**
     * **PageRank Analysis:** Runs the PageRank algorithm on the graph to calculate a base score based on network influence.
-    * **NLP Sentiment Analysis:** Uses a Hugging Face Transformer model to analyze the text of endorsements and calculate a sentiment boost.
+    * **NLP Sentiment Analysis:** Uses a Hugging Face Transformer model to analyze endorsement text and calculate a sentiment boost.
 4.  **Normalization & Storage:** The final hybrid score is normalized to a 0-100 scale and saved to the `trust_scores` collection.
 
 #### Privacy-Preserving ZK-Proof Flow
-
 ```mermaid
 graph TD
     subgraph "Off-Chain (Backend Server)"
-        A[1. API receives private inputs<br/>(e.g., a, b)] --> B[2. Generate Proof<br/>(snarkjs + .wasm/.zkey)];
-        B --> C{3. Cryptographic Proof<br/>+ Public Signals};
+        A["1. API receives private inputs<br/>(e.g., a, b)"] --> B["2. Generate Proof<br/>(snarkjs + .wasm/.zkey)"];
+        B --> C{"3. Cryptographic Proof<br/>+ Public Signals"};
     end
 
     subgraph "On-Chain (Optimism Sepolia)"
-        D[4. Verifier Contract<br/>(Groth16Verifier.sol)] --> E((5. Verification Result<br/>True / False));
+        D["4. Verifier Contract<br/>(Groth16Verifier.sol)"] --> E(("5. Verification Result<br/>True / False"));
     end
 
-    C -- Sends Tx with Proof to --> D;
+    C -- "Sends Tx with Proof to" --> D;
 ```
 
 ## 5. Technology Stack
