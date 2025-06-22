@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { motion } from "framer-motion"
 
 export default function Header() {
@@ -50,10 +51,13 @@ export default function Header() {
           </button>
         </nav>
 
-        <button className="text-sm text-gray-400 hover:text-white transition-colors duration-200 relative group">
-          Connect Wallet
+        <Link 
+          href="/docs"
+          className="text-sm text-gray-400 hover:text-white transition-colors duration-200 relative group"
+        >
+          Docs
           <div className="absolute bottom-0 left-0 w-0 h-px bg-blue-500 group-hover:w-full transition-all duration-300" />
-        </button>
+        </Link>
       </div>
     </motion.header>
   )
