@@ -1,4 +1,4 @@
-// File: index.js (Simplified for a Stable Deployment - NO SWAGGER)
+// File: index.js (Simplified for a stable deployment)
 
 import express from 'express';
 import cors from 'cors';
@@ -14,6 +14,7 @@ import { verifierContractAddress, verifierContractAbi } from './utils/contractIn
 import 'dotenv/config';
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 

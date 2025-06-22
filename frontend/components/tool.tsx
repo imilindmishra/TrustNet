@@ -29,7 +29,7 @@ export default function Tool() {
     setResult(null)
 
     try {
-      const response = await fetch(`<span class="math-inline">\{process\.env\.NEXT\_PUBLIC\_API\_URL\}/trust\-score/</span>{address}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trust-score/${address.trim()}`);
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || "Failed to fetch trust score")
