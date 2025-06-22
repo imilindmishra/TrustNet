@@ -2,18 +2,19 @@
 
 import { motion } from "framer-motion"
 
+// Updated feature descriptions to be more specific and impressive
 const features = [
   {
-    title: "Data-Driven",
-    description: "Weighted interactions across platforms",
+    title: "Hybrid Scoring Engine",
+    description: "Combines Google's PageRank algorithm to measure network influence with NLP sentiment analysis on peer endorsements for a nuanced, hybrid score.",
   },
   {
-    title: "On-Chain Analysis",
-    description: "IPFS, Ceramic, smart contract integration",
+    title: "Multi-Source Data Graph",
+    description: "Constructs a comprehensive graph by ingesting real collaboration records from IPFS, identity data from Ceramic (simulated), and social endorsements from Lens (simulated).",
   },
   {
-    title: "Privacy Focused",
-    description: "ZK-proof verification system",
+    title: "ZK-Powered Privacy",
+    description: "Features a complete, end-to-end Zero-Knowledge pipeline using Groth16 and an on-chain verifier contract on Optimism to enable private attestations.",
   },
 ]
 
@@ -30,8 +31,9 @@ export default function About() {
             viewport={{ once: true }}
           >
             <h2 className="text-4xl md:text-5xl font-light mb-6 text-white">What is TrustNet?</h2>
+            {/* Updated main description */}
             <p className="text-lg text-gray-400 max-w-3xl leading-relaxed">
-              A dynamic social trust graph analyzing on-chain and off-chain data to help identify credible contributors.
+              TrustNet is a decentralized reputation protocol designed to replace pitch-based fundraising with a verifiable, data-driven system. By analyzing a contributor's on-chain and off-chain history, we construct a dynamic social trust graph to help DAOs and VCs identify credible partners with proven track records.
             </p>
           </motion.div>
 
