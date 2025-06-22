@@ -163,6 +163,12 @@ app.post('/verify-endorsement', async (req, res) => {
   }
 });
 
-// Connect to DB and export app for Vercel
-connectDB();
-export default app;
+
+connectDB().then(() => {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(
+      `Backend server running on port ${PORT}. API docs at /api-docs`
+    );
+  });
+});
