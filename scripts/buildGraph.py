@@ -4,7 +4,7 @@ import time
 from transformers import pipeline
 
 def build_and_save_scores():
-    uri = "mongodb://localhost:27017/"
+    uri = "mongodb+srv://imilindmishra:oCF3JZQKl79au7t3@cluster0.tlma9.mongodb.net/trustGraph"
     client = MongoClient(uri)
     db = client['trustGraph']
     interactions_collection = db['interactions']
