@@ -1,8 +1,6 @@
-// File: trustnet/frontend/app/docs/page.tsx (Complete Final Version)
-
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, TestTube2, User, Users, Bot } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'TrustNet | Documentation',
@@ -51,6 +49,25 @@ const ApiReference = ({ method, path, description, children }: { method: 'GET' |
   );
 };
 
+// Reusable component for Persona cards
+const PersonaCard = ({ icon, title, description, addresses }: { icon: React.ReactNode, title: string, description: string, addresses: string[] }) => (
+    <div className="bg-white/5 border border-gray-800 rounded-lg p-6">
+        <div className="flex items-start space-x-4">
+            <div className="text-cyan-400 mt-1">{icon}</div>
+            <div>
+                <h4 className="font-bold text-white">{title}</h4>
+                <p className="text-sm text-gray-400 mt-1 mb-3">{description}</p>
+                <div className="flex flex-wrap gap-2">
+                    {addresses.map(address => (
+                        <code key={address} className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">{address}</code>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
+
 export default function DocsPage() {
   return (
     <main className="bg-black text-gray-300 min-h-screen">
@@ -69,87 +86,67 @@ export default function DocsPage() {
 
         <div className="space-y-20">
           
+          <section>
+            <SectionTitle>Example Personas & Test Cases</SectionTitle>
+            <div className="grid md:grid-cols-2 gap-4">
+                <PersonaCard 
+                    icon={<Bot size={20}/>}
+                    title="The Highly-Connected Influencer"
+                    description="A central node with many positive endorsements. Receives the highest PageRank and a significant sentiment boost."
+                    addresses={["0xGURU"]}
+                />
+                <PersonaCard 
+                    icon={<User size={20}/>}
+                    title="The Core Contributor"
+                    description="An active developer with multiple project collaborations and strong, reciprocal endorsements."
+                    addresses={["0xA1", "0xB2"]}
+                />
+                <PersonaCard 
+                    icon={<Users size={20}/>}
+                    title="The Organization (DAO)"
+                    description="Scores for entities like DAOs are derived from the collective reputation of their contributors."
+                    addresses={["DAO1", "ProtocolX", "DAO2"]}
+                />
+                <PersonaCard 
+                    icon={<TestTube2 size={20}/>}
+                    title="Other Test Addresses"
+                    description="A variety of other contributors included in the dataset to test with."
+                    addresses={["0xC3", "0xD4", "0xE5", "0xF6"]}
+                />
+            </div>
+          </section>
+
           <section id="pipeline-flow">
             <SectionTitle>Data & Scoring Pipeline Flow</SectionTitle>
             <ol className="relative border-l border-gray-700">
-                <FlowStep number={1} title="Data Seeding">
-                    The process begins with the `collectData.js` script. It reads from multiple mock data sources (collaborations, endorsements, profiles) and populates the `interactions` collection in our MongoDB Atlas database.
-                </FlowStep>
-                <FlowStep number={2} title="Graph Construction">
-                    The `buildGraph.py` script reads the raw data from the `interactions` collection and uses the `networkx` library to construct a weighted, directed graph of all entities and their relationships.
-                </FlowStep>
-                <FlowStep number={3} title="Sentiment Analysis (NLP)">
-                    For `endorsement` interactions, the script uses a pre-trained Hugging Face model to perform sentiment analysis on the endorsement text, assigning a positive or negative value to the interaction.
-                </FlowStep>
-                <FlowStep number={4} title="PageRank Calculation">
-                    The script runs the PageRank algorithm on the weighted graph. This calculates a base score for each node based on its network influence and the importance of its connections.
-                </FlowStep>
-                <FlowStep number={5} title="Hybrid Score & Normalization">
-                    The sentiment score boost is applied to the base PageRank score to create a final hybrid score. This score is then normalized to a 0-100 scale for easy interpretation.
-                </FlowStep>
-                 <FlowStep number={6} title="Save to Database">
-                    The final, normalized scores are saved to the `trust_scores` collection in MongoDB, ready to be served by the API.
-                </FlowStep>
+                 <FlowStep number={1} title="Data Seeding">The process begins by populating our MongoDB Atlas database with raw interaction data (collaborations, endorsements, profiles) from local JSON sources.</FlowStep>
+                 <FlowStep number={2} title="Graph Construction">The Python script reads the raw data and uses the `networkx` library to construct a weighted, directed graph of all entities.</FlowStep>
+                 <FlowStep number={3} title="Sentiment Analysis (NLP)">For `endorsement` interactions, a Hugging Face model performs sentiment analysis on the text to calculate a positive or negative score modifier.</FlowStep>
+                 <FlowStep number={4} title="PageRank Calculation">The PageRank algorithm runs on the graph, calculating a base score for each node based on its network influence and connection weights.</FlowStep>
+                 <FlowStep number={5} title="Hybrid Score & Normalization">The sentiment modifier is applied to the PageRank score, and the final hybrid score is normalized to a 0-100 scale.</FlowStep>
+                 <FlowStep number={6} title="Save to Database">The final scores are saved to the `trust_scores` collection in MongoDB, ready to be served by the API.</FlowStep>
             </ol>
           </section>
 
           <section id="zk-flow">
             <SectionTitle>Zero-Knowledge Verification Flow</SectionTitle>
             <ol className="relative border-l border-gray-700">
-                <FlowStep number={1} title="API Request">
-                    A user sends a POST request to the `/verify-endorsement` endpoint with private inputs (in our proof-of-concept, `a` and `b`).
-                </FlowStep>
-                <FlowStep number={2} title="Off-Chain Proof Generation">
-                    The Node.js backend uses the `snarkjs` library and the pre-compiled circuit artifacts (`.wasm`, `.zkey`) to generate a valid Groth16 cryptographic proof and public signals.
-                </FlowStep>
-                <FlowStep number={3} title="On-Chain Verification">
-                    The backend, acting as a relayer, sends this generated proof to our `Groth16Verifier.sol` smart contract, which is live on the Optimism Sepolia testnet.
-                </FlowStep>
-                <FlowStep number={4} title="API Response">
-                    The smart contract's `verifyProof` function returns `true` or `false`. The backend relays this on-chain verification result back to the user.
-                </FlowStep>
+                <FlowStep number={1} title="API Request">A POST request is sent to the `/verify-endorsement` endpoint with private inputs.</FlowStep>
+                <FlowStep number={2} title="Off-Chain Proof Generation">The Node.js backend uses `snarkjs` and pre-compiled circuit artifacts to generate a valid Groth16 cryptographic proof.</FlowStep>
+                <FlowStep number={3} title="On-Chain Verification">The backend relays this proof to our `Groth16Verifier.sol` smart contract on the Optimism Sepolia testnet.</FlowStep>
+                <FlowStep number={4} title="API Response">The smart contract's `verifyProof` function returns `true` or `false`, which the API relays back to the client.</FlowStep>
             </ol>
           </section>
 
           <section id="api-reference">
             <SectionTitle>API Reference</SectionTitle>
-            
-            <ApiReference 
-                method="GET" 
-                path="/trust-score/{address}" 
-                description="Retrieves the calculated hybrid trust score for a given wallet address."
-            >
-              <CodeBlock 
-                title="Example Request (cURL)"
-                code={`curl https://backend-nvi1.onrender.com/trust-score/0xGURU`}
-              />
-              <CodeBlock 
-                title="Success Response (200 OK)"
-                code={JSON.stringify({ address: '0xGURU', score: 100.0 }, null, 2)}
-              />
-               <CodeBlock 
-                title="Error Response (404 Not Found)"
-                code={JSON.stringify({ error: 'Score not found for this address.' }, null, 2)}
-              />
+            <ApiReference method="GET" path="/trust-score/{address}" description="Retrieves the calculated hybrid trust score for a given wallet address.">
+              <CodeBlock title="Example Request (cURL)" code={`curl https://backend-nvi1.onrender.com/trust-score/0xGURU`} />
+              <CodeBlock title="Success Response (200 OK)" code={JSON.stringify({ address: '0xGURU', score: 100.0 }, null, 2)} />
             </ApiReference>
-
-            <ApiReference
-                method="POST"
-                path="/verify-endorsement"
-                description="Generates a ZK proof for a simple computation and verifies it using an on-chain smart contract."
-            >
-               <CodeBlock 
-                title="Example Request (cURL)"
-                code={`curl -X POST -H "Content-Type: application/json" \\\n  -d '{"a": "3", "b": "2"}' \\\n  https://backend-nvi1.onrender.com/verify-endorsement`}
-              />
-               <CodeBlock 
-                title="Success Response (200 OK)"
-                code={JSON.stringify({
-                  message: 'On-chain verification successful!',
-                  isVerified: true,
-                  publicOutput: '5'
-                }, null, 2)}
-              />
+            <ApiReference method="POST" path="/verify-endorsement" description="Generates a ZK proof for a simple computation and verifies it on-chain.">
+               <CodeBlock title="Example Request (cURL)" code={`curl -X POST -H "Content-Type: application/json" \\\n  -d '{"a": "3", "b": "2"}' \\\n  https://backend-nvi1.onrender.com/verify-endorsement`} />
+               <CodeBlock title="Success Response (200 OK)" code={JSON.stringify({ message: 'On-chain verification successful!', isVerified: true, publicOutput: '5' }, null, 2)} />
             </ApiReference>
           </section>
 
