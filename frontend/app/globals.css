@@ -26,6 +26,15 @@
   }
 }
 
+@keyframes drift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(100px, 100px);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

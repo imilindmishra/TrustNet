@@ -1,13 +1,13 @@
-// File: tool.tsx (Final Corrected Version)
+// File: tool.tsx (Updated with Moving Dots)
 
 "use client"
 import type React from "react"
 import { useState } from "react"
-import { motion } from "framer-motion"
-import { Loader2 } from "lucide-react"
-import AnalysisCard from "@/components/AnalysisCard" // Import the new AnalysisCard
+import { motion, AnimatePresence } from "framer-motion"
+import { Loader2, Search } from "lucide-react"
+import AnalysisCard from "@/components/AnalysisCard"
+import MovingDotsBackground from "@/components/MovingDotsBackground" // Import the background component
 
-// Define the full analysis object structure from your API
 interface AnalysisResult {
   address: string
   finalScore: number
@@ -28,7 +28,7 @@ interface AnalysisResult {
 
 export default function Tool() {
   const [address, setAddress] = useState("")
-  const [result, setResult] = useState<AnalysisResult | null>(null) // Use the new interface
+  const [result, setResult] = useState<AnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -37,20 +37,15 @@ export default function Tool() {
       setError("Please enter a valid wallet address")
       return
     }
-
     setIsLoading(true)
     setError("")
     setResult(null)
-
     try {
-      // This is the correct fetch call that uses the environment variable
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trust-score/${address.trim()}`);
-      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch trust score");
       }
-
       const data = await response.json();
       setResult(data);
     } catch (err: any) {
@@ -67,8 +62,14 @@ export default function Tool() {
   }
 
   return (
-    <section id="tool" className="py-32 bg-black">
-      <div className="container mx-auto px-6">
+    <section id="tool" className="relative py-32 bg-black overflow-hidden">
+      {/* Added background animation layer */}
+      <div className="absolute inset-0 z-0">
+        <MovingDotsBackground />
+      </div>
+
+      {/* Main content now has a relative z-index to sit on top of the background */}
+      <div className="relative z-10 container mx-auto px-6">
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -89,7 +90,8 @@ export default function Tool() {
           transition={{ duration: 0.8, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          <div className="space-y-8 p-8 glow-box rounded-lg border border-gray-900">
+          {/* Your existing form and result card */}
+          <div className="space-y-8 p-8 glow-box rounded-lg border border-gray-900 bg-black/30 backdrop-blur-sm">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="relative">
                 <input
@@ -117,18 +119,21 @@ export default function Tool() {
               </button>
             </form>
 
-            {error && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-red-400 text-sm text-center"
-              >
-                {error}
-              </motion.div>
-            )}
+            <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-400 text-sm text-center"
+                  >
+                    {error}
+                  </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* This will now render our new, detailed analysis card */}
-            {result && <AnalysisCard result={result} />}
+            <AnimatePresence>
+              {result && <AnalysisCard result={result} />}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>
