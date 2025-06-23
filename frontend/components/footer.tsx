@@ -8,9 +8,9 @@ import { Github, Twitter, Linkedin } from "lucide-react" // Importing icons
 export default function Footer() {
   // You can easily update these with your personal links
   const socialLinks = [
-    { name: "GitHub", href: "#", icon: <Github size={20} /> },
-    { name: "Twitter", href: "#", icon: <Twitter size={20} /> },
-    { name: "LinkedIn", href: "#", icon: <Linkedin size={20} /> }
+    { name: "GitHub", href: "/", icon: <Github size={20} /> },
+    { name: "Twitter", href: "https://x.com/i_milindmishra", icon: <Twitter size={20} /> },
+    { name: "LinkedIn", href: "https://www.linkedin.com/in/imilindmishra", icon: <Linkedin size={20} /> }
   ];
 
   const navLinks = [
